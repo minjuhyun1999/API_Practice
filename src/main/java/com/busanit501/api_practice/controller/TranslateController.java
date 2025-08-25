@@ -30,7 +30,7 @@ public class TranslateController {
         System.out.println("request = " + request);
         String text = request.getText();
         String sourceLanguage = request.getSourceLanguage();
-        final String finalTargetLanguage = determineTargetLanguage(request.getText(), request.getTargetLanguage());
+        String targetLanguage = request.getTargetLanguage();
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -40,7 +40,7 @@ public class TranslateController {
                         .queryParam("key", googleApiKey)
                         .queryParam("q", text)
                         .queryParam("source", sourceLanguage)
-                        .queryParam("target", finalTargetLanguage)
+                        .queryParam("target", targetLanguage)
                         .build())
                 .retrieve()
                 .bodyToMono(String.class)
@@ -58,19 +58,5 @@ public class TranslateController {
                         return Mono.error(new RuntimeException("Failed to parse translation response: " + e.getMessage(), e));
                     }
                 });
-    }
-
-    private String determineTargetLanguage(String text, String targetLanguage) {
-        if (targetLanguage == null || targetLanguage.isEmpty()) {
-            // If target language is not specified, auto-detect based on text content
-            boolean isKorean = text != null && text.matches(".*[\\uac00-\\ud7a3]+.*");
-            if (isKorean) {
-                return "en";
-            }
-            else {
-                return "ko";
-            }
-        }
-        return targetLanguage;
     }
 }
